@@ -127,6 +127,7 @@ class ADF4351:
     R2_MUXOUT_ALD = 5 << R2_MUXOUT_OFF
     R2_MUXOUT_DLD = 6 << R2_MUXOUT_OFF
     R2_LOW_NOISE_SPUR_OFF = 29
+    R2_LOW_NOISE_SPUR_MASK = bits(2) << R2_LOW_NOISE_SPUR_OFF
 
     R3_CLK_DIV_OFF = 3
     R3_CLK_DIV_MASK = bits(12) << R3_CLK_DIV_OFF
@@ -179,18 +180,57 @@ class ADF4351:
     r4 = Register(0b100)
     r5 = Register(0b101)
 
-    r_counter = RegVal(r2, R2_R_OFF, 10)
+    int = RegVal(r0, R0_INT_OFF, 16)
+    frac = RegVal(r0, R0_FRAC_OFF, 12)
+
+    mod = RegVal(r1, R1_MOD_OFF, 12)
+    phase = RegVal(r1, R1_PHASE_OFF, 12)
+    prescaler_89 = RegBit(r1, R1_PRESCALER)
+    phase_adj = RegBit(r1, R1_PHASE_ADJUST)
+
+    couter_reset = RegBit(r2, R2_COUNTER_RESET_ENABLE)
+    cp_three_state = RegBit(r2, R2_CP_THREE_STATE_ENABLE)
+    power_down = RegBit(r2, R2_POWER_DOWN)
+    pd_polarity_positive = RegBit(r2, R2_PD_POLARITY_POSITIVE)
+    ldp_6ns = RegBit(r2, R2_LDP_6NS)
+    ldf_intn = RegBit(r2, R2_LDF_INTN)
     charge_pump_current = RegVal(r2, R2_CHARGE_PUMP_CURRENT_OFF, 4)
+    double_buffer = RegBit(r2, R2_DOUBLE_BUFFER_ENABLE)
+    r_counter = RegVal(r2, R2_R_OFF, 10)
+    ref_div2 = RegBit(r2, R2_RDIV2_ENABLE)
+    ref_doubler = RegBit(r2, R2_REFERENCE_DOUBLER_ENABLE)
+    muxout = RegVal(r2, R2_MUXOUT_OFF, 3)
+
+    @property
+    def low_spur(self):
+        return bool((self.r2 >> ADF4351.R2_LOW_NOISE_SPUR_OFF) & 0b11)
+
+    @low_spur.setter
+    def low_spur(self, val):
+        if val:
+            self.r2 |= ADF4351.R2_LOW_NOISE_SPUR_MASK
+        else:
+            self.r2 &= ~ADF4351.R2_LOW_NOISE_SPUR_MASK
 
     clock_divider_val = RegVal(r3, R3_CLK_DIV_OFF, 12)
+    clock_divider_mode = RegVal(r3, R3_CLK_DIV_MODE_OFF, 2)
+    cycle_slip_reduction = RegBit(r3, R3_CSR)
+    charge_cancelation = RegBit(r3, R3_CHARGE_CANCEL)
+    antibacklash_pulse_3ns = RegBit(r3, R3_ABP)
     band_select_high = RegBit(r3, R3_BAND_SELECT_MODE)
 
     output_power = RegVal(r4, R4_OUTPUT_POWER_OFF, 2)
     output_enable = RegBit(r4, R4_RF_OUTPUT_ENABLE)
     aux_output_power = RegVal(r4, R4_AUX_OUTPUT_POWER_OFF, 2)
     aux_output_enable = RegBit(r4, R4_AUX_OUTPUT_ENABLE)
+    aux_output_fundamental = RegBit(r4, R4_AUX_OUTPUT_SELECT)
     mute_till_lock_detect = RegBit(r4, R4_MTLD)
+    vco_power_down = RegBit(r4, R4_VCO_POWER_DOWN)
+    band_select_clock_div = RegVal(r4, R4_BAND_SELECT_CLOCK_DIV_OFF, 8)
+    rf_divider = RegVal(r4, R4_DIVIDER_SELECT_OFF, 3)
     feedback_fundamental = RegBit(r4, R4_FEEDBACK_SELECT)
+
+    ld_pin_mode = RegVal(r5, R5_LD_PIN_MODE_OFF, 2)
 
     OUTPUT_DIVIDER_1 = 0b000
     OUTPUT_DIVIDER_2 = 0b001
