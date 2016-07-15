@@ -263,6 +263,7 @@ class ADF4351:
         self.r2 = 0x00000000
         self.r_counter = 1
         self.charge_pump_current = 0b0111
+        self.pd_polarity_positive = True
         self.r1 = 0x00000000
         self.r0 = 0x00000000
 
